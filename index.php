@@ -36,6 +36,14 @@
  * @filesource
  */
 
+ /*
+ *---------------------------------------------------------------
+ * CUSTOM
+ * --------------------------------------------------------------
+ */
+	define('SCPATH', dirname(__FILE__).DIRECTORY_SEPARATOR.'writable'.DIRECTORY_SEPARATOR);
+	define('APP_VERSION', '0.0.1');
+
 /*
  *---------------------------------------------------------------
  * APPLICATION ENVIRONMENT

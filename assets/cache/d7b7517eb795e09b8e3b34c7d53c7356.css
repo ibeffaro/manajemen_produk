@@ -1,0 +1,11 @@
+
+		:root {
+			--app-border-radius: 4px;
+			--app-color: #c50000;
+			--app-color-transparent: rgba(197, 0, 0, 0.25);
+			--app-color-light: #ff6e6e;
+			--app-color-dark: #a70000;
+			--app-color-dark2: #9d0000;
+			--app-color-text: #fff;
+		}
+	
