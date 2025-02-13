@@ -4,6 +4,8 @@ function render($data = [], $output = '', $forceAccess = false)
 {
     if (!setting('load_page')) {
         $CI         = get_instance();
+        $CI->config->set_item('setting_load_page', true);
+        if (is_object($data)) $data  = (array) $data;
         if (is_array($data) || in_array($data, ['403', '404', 'err'])) {
             $init_page = '';
             if (!is_array($data)) {
@@ -24,16 +26,10 @@ function render($data = [], $output = '', $forceAccess = false)
 
             if (strtolower($output) == 'json') {
                 header('Content-Type: application/json');
-                if (function_exists('info_data_menu')) {
-                    $badge              = info_data_menu();
-                    if (is_array($badge) && count($badge)) {
-                        $data['__badge']    = $badge;
-                    }
-                }
                 echo json_encode($data);
             } else {
                 $CI->load->library('asset');
-                $layout = 'default';
+                $layout                 = 'default';
                 if ($output) {
                     $attr_output = explode(' ', $output);
                     foreach ($attr_output as $av) {
@@ -54,6 +50,7 @@ function render($data = [], $output = '', $forceAccess = false)
                 }
                 if ($init_page) {
                     $error_code = in_array($init_page, [404, 403]) ? $init_page : 400;
+                    if ($init_page == 'maintenance_mode') $error_code = 200;
                     $CI->output->set_status_header($error_code);
                     $layout             = false;
                     $view               = 'errors/error_all';
@@ -63,23 +60,49 @@ function render($data = [], $output = '', $forceAccess = false)
                     $data['message']    = !isset($data['message']) ? lang($init_page . '_desc') : $data['message'];
                     switch ($init_page) {
                         case "403":
-                            $data['title']      = 'Dilarang';
+                            $data['title']      = lang('dilarang');
                             $data['image']      = '403';
                             break;
                         case "404":
-                            $data['title']      = 'Halaman Tidak Ditemukan';
+                            $data['title']      = lang('halaman_tidak_ditemukan');
                             $data['image']      = '404';
                             break;
                         default:
                             $data['error_code'] = "Err";
                             $data['image']      = 'error';
-                            $data['title']      = 'Kesalahan';
+                            $data['title']      = lang('kesalahan');
                     }
+                    update_data('user_log', ['respon' => $data['error_code']], 'id', setting('last_id_log'));
                 }
-                $data['__js']   = '';
-                $data['__css']  = '';
+                $data['__js']           = '';
+                $data['__css']          = '';
+                $data['uri_string']     = $CI->uri->uri_string();
+
+                $custom_css             = '';
+                if (setting('font_type') != 'roboto') {
+                    $custom_css         .= '--app-font-family:"' . ucwords(str_replace(['.', '-'], ' ', setting('font_type'))) . '",Roboto,"Helvetica Neue",Helvetica,Arial,sans-serif;';
+                }
+                if (setting('font_size') && setting('font_size') > 12 && setting('font_size') <= 15) {
+                    $custom_css         .= '--app-font-size:' . setting('font_size') . 'px;--app-font-size-int:' . setting('font_size') . ';';
+                }
+                if (setting('border_radius') >= 0 && setting('border-radius') <= 16) {
+                    $custom_css         .= '--app-border-radius:' . setting('border_radius') . 'px;';
+                }
+
+                $_custom_css    = '';
+                if ($custom_css) {
+                    $_custom_css    .= ':root{' . $custom_css . '}';
+                }
+                $data['__custom_css']   = $_custom_css ? '<style type="text/css">' . $_custom_css . '</style>' : '';
                 if ($layout && $layout != 'false') {
-                    $content    = preg_replace('/<!--(.|\s)*?-->/', '', $CI->load->view($view, $data, true));
+
+                    $data['__cur_uri']      = $CI->uri->segment(1);
+                    if (!$data['__cur_uri'] && substr($CI->uri->uri_string(), 0, 7) == 'account') {
+                        $data['__cur_uri']  = 'account';
+                    }
+
+                    $content                = preg_replace('/<!--(.|\s)*?-->/', '', $CI->load->view($view, $data, true));
+
                     $data['__content']      = define_custom_tag(
                         clear_custom_tag(
                             clear_js(
@@ -88,12 +111,12 @@ function render($data = [], $output = '', $forceAccess = false)
                         ),
                         $data
                     );
-                    
-                    $data['__css']      = render_css($content, $str_view);
-                    $data['__js']       = render_js($content, $str_view);
+                    $data['__css']                      = render_css($content, $str_view);
+                    $data['__js']                       = render_js($content, $str_view);
                     if (strpos($data['__content'], 'input-icon') !== false && strpos($data['__js'], 'jquery.iconpicker') === false) {
                         $data['__js']                   = '<script type="text/javascript" src="' . asset_url('js/jquery.iconpicker.js') . '"></script>' . "\n" . $data['__js'];
                     }
+                    // $data['file_upload_max_size']       = file_upload_max_size();
                     $CI->load->view('layout/' . $layout, $data);
                 } else {
                     if (isset($data['error_code'])) {
@@ -178,6 +201,144 @@ function get_access($target = '')
         }
     }
     return $access;
+}
+
+function clear_custom_tag($content = '')
+{
+    $content    = preg_replace('/<action-header\b[^>]*>(.*?)<\/action-header>/is', '', $content);
+    $content    = preg_replace('/<action-header-additional\b[^>]*>(.*?)<\/action-header-additional>/is', '', $content);
+    $html       = preg_replace('/<right-panel\b[^>]*>(.*?)<\/right-panel>/is', '', $content);
+    return $html;
+}
+
+function clear_css($content = '')
+{
+    $content = preg_replace('/<link.*?(.*?)>/is', '', $content);
+    $html = preg_replace('/<style\b[^>]*>(.*?)<\/style>/is', '', $content);
+    return $html;
+}
+
+function clear_js($content = '')
+{
+    $content    = str_replace('.js', '.js?v=' . APP_VERSION, $content);
+    $html = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $content);
+    return $html;
+}
+
+function render_css($content = '', $str_view = '')
+{
+    $return_css  = '';
+    $css         = '';
+    $inline_css  = '';
+    preg_match_all('/<link.*?(.*?)>/si', $content, $res);
+    if (isset($res[0])) {
+        foreach ($res[0] as $r) {
+            $return_css .= $r . PHP_EOL;
+        }
+    }
+
+    preg_match_all('/<style.*?>(.*?)<\/style>/si', $content, $res);
+    if (isset($res[1])) {
+        if (isset($res[0]) && isset($res[0][0]) && strpos($res[0][0], 'data-inline') !== false) {
+            foreach ($res[1] as $k => $r) {
+                if (ENVIRONMENT == 'production') {
+                    $inline_css    .= minify_css($r);
+                } else {
+                    $inline_css    .= $r;
+                }
+            }
+        } else {
+            foreach ($res[1] as $k => $r) {
+                if (ENVIRONMENT == 'production') {
+                    $css    .= minify_css($r);
+                } else {
+                    $css    .= $r;
+                }
+            }
+        }
+    }
+
+    if (!is_dir(FCPATH . 'assets/cache')) {
+        $oldmask = umask(0);
+        mkdir(FCPATH . 'assets/cache', 0777);
+        umask($oldmask);
+    }
+
+    $filename   = 'assets/cache/' . md5($str_view) . '.css';
+    if ($css) {
+        $render = false;
+        if (file_exists($filename)) {
+            $str_file   = file_get_contents($filename);
+            if ($str_file != $css) $render = true;
+        } else $render = true;
+        if ($render) {
+            $handle = fopen($filename, "wb");
+            if ($handle) {
+                fwrite($handle, $css);
+            }
+            fclose($handle);
+        }
+        $return_css .= file_exists($filename) ? '<link rel="stylesheet" type="text/css" href="' . base_url($filename) . '?v=' . APP_VERSION . '" />' : '<style type="text/css">' . $css . '</style>';
+    }
+    if ($inline_css) {
+        $return_css .= '<style type="text/css">' . $inline_css . '</style>';
+    }
+    return $return_css;
+}
+
+function render_js($content = '', $str_view = '')
+{
+    $return_js  = '';
+    $inline_js  = '';
+    $js         = '';
+    preg_match_all('/<script.*?>(.*?)<\/script>/si', $content, $res);
+    if (isset($res[1])) {
+        foreach ($res[1] as $k => $r) {
+            $_res0 = str_replace($r, '', $res[0][$k]);
+            if (strpos($_res0, ' src=') !== false) {
+                $return_js .= str_replace('.js', '.js?v=' . APP_VERSION, $res[0][$k]) . PHP_EOL;
+            } elseif (strpos($_res0, 'data-inline') !== false) {
+                if (ENVIRONMENT !== 'production' && strpos($_res0, 'data-unminify') == false) {
+                    $inline_js  .= minify_js($r);
+                } else {
+                    $inline_js  .= trim($r, "\n");
+                }
+            } else {
+                if (ENVIRONMENT == 'production') {
+                    $js     .= minify_js($r);
+                } else {
+                    $js     .= trim($r, "\n");
+                }
+            }
+        }
+    }
+
+    if (!is_dir(FCPATH . 'assets/cache')) {
+        $oldmask = umask(0);
+        mkdir(FCPATH . 'assets/cache', 0777);
+        umask($oldmask);
+    }
+
+    $filename   = 'assets/cache/' . md5($str_view) . '.js';
+    if ($js) {
+        $render = false;
+        if (file_exists($filename)) {
+            $str_file   = file_get_contents($filename);
+            if ($str_file != $js) $render = true;
+        } else $render = true;
+        if ($render) {
+            $handle = fopen($filename, "wb");
+            if ($handle) {
+                fwrite($handle, $js);
+            }
+            fclose($handle);
+        }
+        $return_js .= file_exists($filename) ? '<script type="text/javascript" src="' . base_url($filename) . '?v=' . APP_VERSION . '"></script>' : '<script type="text/javascript">' . $js . '</script>' . PHP_EOL;
+    }
+    if ($inline_js) {
+        $return_js .= '<script type="text/javascript">' . $inline_js . '</script>' . PHP_EOL;
+    }
+    return $return_js;
 }
 
 function define_custom_tag($html, $data = [])
@@ -325,8 +486,8 @@ function define_custom_tag($html, $data = [])
                     $modal_footer   .= '<div class="modal-footer-info">' . "\n";
                     $modal_footer   .= '<i class="fa-info-circle" data-appinity-tooltip="right"></i>' . "\n";
                     $modal_footer   .= '</div>' . "\n";
-                    $modal_footer   .= '<button type="button" class="btn btn-theme" data-bs-dismiss="modal">' . lang('batal') . '</button>' . "\n";
-                    $modal_footer   .= '<button type="submit" class="btn btn-app" form="' . $idForm . '">' . lang('simpan') . '</button>' . "\n";
+                    $modal_footer   .= '<button type="button" class="btn btn-theme" data-bs-dismiss="modal">Batal</button>' . "\n";
+                    $modal_footer   .= '<button type="submit" class="btn btn-app" form="' . $idForm . '">Simpan</button>' . "\n";
                 }
             }
         }
@@ -452,7 +613,6 @@ function define_custom_tag($html, $data = [])
             dst
         */
 
-
         $new_attr       .= " class=\"{$class_table}\"";
         if ($key_table) {
             $new_attr   .= " data-key=\"{$key_table}\"";
@@ -463,12 +623,7 @@ function define_custom_tag($html, $data = [])
                 }
             }
         }
-        $new_html   = "";
-        if (setting('pos_add_button') == "table" && $add_button) {
-            $cls_action = setting('pos_action_button') == 'left' ? 'text-start' : 'text-end';
-            $new_html   .= '<div class="mb-3 appinityTable-action-button ' . $cls_action . '">' . setting('action_header') . '</div>';
-        }
-        $new_html   .= "<table{$new_attr}>{$res[1][$key_res]}</table>\n";
+        $new_html   = "<table{$new_attr}>{$res[1][$key_res]}</table>\n";
         $html       = str_replace($val_res, $new_html, $html);
     }
 
@@ -751,8 +906,24 @@ function define_app_input($res, $html, $grouping = false, $res_input_default = '
                 else if (in_array($attr, ['prefix', 'prepend']) && $val)   $prefix    = $val;
                 else if (in_array($attr, ['suffix', 'append']) && $val)    $suffix    = $val;
                 else if (!in_array($attr, [
-                    'type', 'label', 'sub-label', 'label-type', 'name', 'id', 'validation', 'class', 'size', 'parent-class', 'length',
-                    'size-param', 'value', 'checked', 'append', 'prepend', 'suffix', 'prefix'
+                    'type',
+                    'label',
+                    'sub-label',
+                    'label-type',
+                    'name',
+                    'id',
+                    'validation',
+                    'class',
+                    'size',
+                    'parent-class',
+                    'length',
+                    'size-param',
+                    'value',
+                    'checked',
+                    'append',
+                    'prepend',
+                    'suffix',
+                    'prefix'
                 ])) {
                     $other_attr    .= " {$l}";
                 }
@@ -953,6 +1124,7 @@ function define_app_input($res, $html, $grouping = false, $res_input_default = '
 
         $html   = str_replace($val_res, $new_content, $html);
     }
+
     return $html;
 }
 
@@ -1056,8 +1228,20 @@ function define_app_select($res, $html, $grouping = false, $res_input_default = 
                 else if (in_array($attr, ['prefix', 'prepend']) && $val)   $prefix    = $val;
                 else if (in_array($attr, ['suffix', 'append']) && $val)    $suffix    = $val;
                 else if (!in_array($attr, [
-                    'label', 'sub-label', 'label-type', 'name', 'id', 'validation', 'class', 'size',
-                    'size-param', 'value', 'append', 'prepend', 'suffix', 'prefix'
+                    'label',
+                    'sub-label',
+                    'label-type',
+                    'name',
+                    'id',
+                    'validation',
+                    'class',
+                    'size',
+                    'size-param',
+                    'value',
+                    'append',
+                    'prepend',
+                    'suffix',
+                    'prefix'
                 ])) {
                     $other_attr    .= " {$l}";
                 }
@@ -1173,143 +1357,5 @@ function define_app_select($res, $html, $grouping = false, $res_input_default = 
 
         $html   = str_replace($val_res, $new_content, $html);
     }
-    return $html;
-}
-
-function render_css($content = '', $str_view = '')
-{
-    $return_css  = '';
-    $css         = '';
-    $inline_css  = '';
-    preg_match_all('/<link.*?(.*?)>/si', $content, $res);
-    if (isset($res[0])) {
-        foreach ($res[0] as $r) {
-            $return_css .= $r . PHP_EOL;
-        }
-    }
-
-    preg_match_all('/<style.*?>(.*?)<\/style>/si', $content, $res);
-    if (isset($res[1])) {
-        if (isset($res[0]) && isset($res[0][0]) && strpos($res[0][0], 'data-inline') !== false) {
-            foreach ($res[1] as $k => $r) {
-                if (ENVIRONMENT == 'production') {
-                    $inline_css    .= minify_css($r);
-                } else {
-                    $inline_css    .= $r;
-                }
-            }
-        } else {
-            foreach ($res[1] as $k => $r) {
-                if (ENVIRONMENT == 'production') {
-                    $css    .= minify_css($r);
-                } else {
-                    $css    .= $r;
-                }
-            }
-        }
-    }
-
-    if (!is_dir(FCPATH . 'assets/cache')) {
-        $oldmask = umask(0);
-        mkdir(FCPATH . 'assets/cache', 0777);
-        umask($oldmask);
-    }
-
-    $filename   = 'assets/cache/' . md5($str_view) . '.css';
-    if ($css) {
-        $render = false;
-        if (file_exists($filename)) {
-            $str_file   = file_get_contents($filename);
-            if ($str_file != $css) $render = true;
-        } else $render = true;
-        if ($render) {
-            $handle = fopen($filename, "wb");
-            if ($handle) {
-                fwrite($handle, $css);
-            }
-            fclose($handle);
-        }
-        $return_css .= file_exists($filename) ? '<link rel="stylesheet" type="text/css" href="' . base_url($filename) . '?v=' . APP_VERSION . '" />' : '<style type="text/css">' . $css . '</style>';
-    }
-    if ($inline_css) {
-        $return_css .= '<style type="text/css">' . $inline_css . '</style>';
-    }
-    return $return_css;
-}
-
-function render_js($content = '', $str_view = '')
-{
-    $return_js  = '';
-    $inline_js  = '';
-    $js         = '';
-    preg_match_all('/<script.*?>(.*?)<\/script>/si', $content, $res);
-    if (isset($res[1])) {
-        foreach ($res[1] as $k => $r) {
-            $_res0 = str_replace($r, '', $res[0][$k]);
-            if (strpos($_res0, ' src=') !== false) {
-                $return_js .= str_replace('.js', '.js?v=' . APP_VERSION, $res[0][$k]) . PHP_EOL;
-            } elseif (strpos($_res0, 'data-inline') !== false) {
-                if (ENVIRONMENT !== 'production' && strpos($_res0, 'data-unminify') == false) {
-                    $inline_js  .= minify_js($r);
-                } else {
-                    $inline_js  .= trim($r, "\n");
-                }
-            } else {
-                if (ENVIRONMENT == 'production') {
-                    $js     .= minify_js($r);
-                } else {
-                    $js     .= trim($r, "\n");
-                }
-            }
-        }
-    }
-
-    if (!is_dir(FCPATH . 'assets/cache')) {
-        $oldmask = umask(0);
-        mkdir(FCPATH . 'assets/cache', 0777);
-        umask($oldmask);
-    }
-
-    $filename   = 'assets/cache/' . md5($str_view) . '.js';
-    if ($js) {
-        $render = false;
-        if (file_exists($filename)) {
-            $str_file   = file_get_contents($filename);
-            if ($str_file != $js) $render = true;
-        } else $render = true;
-        if ($render) {
-            $handle = fopen($filename, "wb");
-            if ($handle) {
-                fwrite($handle, $js);
-            }
-            fclose($handle);
-        }
-        $return_js .= file_exists($filename) ? '<script type="text/javascript" src="' . base_url($filename) . '?v=' . APP_VERSION . '"></script>' : '<script type="text/javascript">' . $js . '</script>' . PHP_EOL;
-    }
-    if ($inline_js) {
-        $return_js .= '<script type="text/javascript">' . $inline_js . '</script>' . PHP_EOL;
-    }
-    return $return_js;
-}
-
-function clear_custom_tag($content = '')
-{
-    $content    = preg_replace('/<action-header\b[^>]*>(.*?)<\/action-header>/is', '', $content);
-    $content    = preg_replace('/<action-header-additional\b[^>]*>(.*?)<\/action-header-additional>/is', '', $content);
-    $html       = preg_replace('/<right-panel\b[^>]*>(.*?)<\/right-panel>/is', '', $content);
-    return $html;
-}
-
-function clear_css($content = '')
-{
-    $content = preg_replace('/<link.*?(.*?)>/is', '', $content);
-    $html = preg_replace('/<style\b[^>]*>(.*?)<\/style>/is', '', $content);
-    return $html;
-}
-
-function clear_js($content = '')
-{
-    $content    = str_replace('.js', '.js?v=' . APP_VERSION, $content);
-    $html = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $content);
     return $html;
 }

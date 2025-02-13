@@ -5,21 +5,22 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="description" content="-">
-	<meta name="base_url" content="<?php echo base_url(); ?>">
+	<meta name="base-url" content="<?= base_url(); ?>">
+	<meta name="string-uri" content="<?= $__cur_uri; ?>">
 	<title><?= $title; ?></title>
 	<?php
-    Asset::css('bootstrap.min.css', true);
-    Asset::css('roboto.css', true);
-    Asset::css('fontawesome.regular.css', true);
-    Asset::css('styles.css', true);
-    echo Asset::render();
-    ?>
+	Asset::css('bootstrap.min.css', true);
+	Asset::css('roboto.css', true);
+	Asset::css('fontawesome.regular.css', true);
+	Asset::css('styles.css', true);
+	echo Asset::render();
+	?>
 </head>
 
 <body class="shadow-theme right-panel-show" data-theme="light">
 	<div id="main-panel">
 		<div class="panel-content p-4">
-            <?= $__content; ?>
+			<?= $__content; ?>
 		</div>
 	</div>
 	<?php

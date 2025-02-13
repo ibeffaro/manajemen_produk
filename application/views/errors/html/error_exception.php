@@ -2,31 +2,39 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 ?>
 
-<div style="border:1px solid #990000;padding-left:20px;margin:0 0 10px 0;">
+<div class="container py-4">
+	<div style="border:1px solid #990000;padding-left:20px;margin:0 0 10px 0;" class="card border-danger p-0 m-0">
 
-<h4>An uncaught Exception was encountered</h4>
+		<h4 class="f-110 fw-bold card-header bg-danger text-white">A PHP Error was encountered</h4>
+		<div class="card-body">
 
-<p>Type: <?php echo get_class($exception); ?></p>
-<p>Message: <?php echo $message; ?></p>
-<p>Filename: <?php echo $exception->getFile(); ?></p>
-<p>Line Number: <?php echo $exception->getLine(); ?></p>
+			<p class="mb-2">Type: <span class="fw-bold"><?php echo get_class($exception); ?></span></p>
+			<p class="mb-2">Message: <span class="fw-bold"><?php echo $message; ?></span></p>
+			<p class="mb-2">Filename: <span class="fw-bold"><?php echo $exception->getFile(); ?></span></p>
+			<p class="mb-2">Line Number: <span class="fw-bold"><?php echo $exception->getLine(); ?></span></p>
 
-<?php if (defined('SHOW_DEBUG_BACKTRACE') && SHOW_DEBUG_BACKTRACE === TRUE): ?>
+			<?php if (defined('SHOW_DEBUG_BACKTRACE') && SHOW_DEBUG_BACKTRACE === TRUE): ?>
 
-	<p>Backtrace:</p>
-	<?php foreach ($exception->getTrace() as $error): ?>
+				<p>Backtrace:</p>
+				<ol class="list-group list-group-numbered">
+				<?php foreach ($exception->getTrace() as $error): ?>
 
-		<?php if (isset($error['file']) && strpos($error['file'], realpath(BASEPATH)) !== 0): ?>
+					<?php if (isset($error['file']) && strpos($error['file'], realpath(BASEPATH)) !== 0): ?>
 
-			<p style="margin-left:10px">
-			File: <?php echo $error['file']; ?><br />
-			Line: <?php echo $error['line']; ?><br />
-			Function: <?php echo $error['function']; ?>
-			</p>
-		<?php endif ?>
+						<li class="list-group-item d-flex justify-content-between align-items-start">
+							<div class="ms-2 me-auto">
+								<div class="fw-bold">File: <?php echo $error['file'] ?></div>
+								Function: <?php echo $error['function'] ?>
+							</div>
+							<span class="badge bg-danger rounded-pill">Line: <?php echo $error['line'] ?></span>
+							
+						</li>
+					<?php endif ?>
 
-	<?php endforeach ?>
-
-<?php endif ?>
+				<?php endforeach ?>
+				</ol>
+			<?php endif ?>
+		</div>
+	</div>
 
 </div>

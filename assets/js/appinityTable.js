@@ -802,15 +802,15 @@
                 var items   = {};
                 if(settings.freezeRow) {
                     items['freeze'] = {
-                        name : lang.freeze_baris,
+                        name : 'Freeze Baris',
                         icon : 'fa-arrow-to-top'
                     };
                     items['unfreeze'] = {
-                        name : lang.unfreeze_baris,
+                        name : 'Unfreeze Baris',
                         icon : 'fa-arrow-to-bottom'
                     };
                     items['unfreezeAll'] = {
-                        name : lang.unfreeze_semua_baris,
+                        name : 'Unfreeze Semua Baris',
                         icon : 'fa-chevron-double-down'
                     };
                 }
@@ -838,8 +838,8 @@
                                 }
                                 $('.row-' + _this.closest('.appinityTable').attr('id') + ' .context-menu-item').each(function(){
                                     if( title == $(this).text() ||
-                                        ($(this).text() == lang.freeze_baris && parentContainer.hasClass('appinityTable-bottom-container')) || 
-                                        (($(this).text() == lang.unfreeze_baris || $(this).text() == lang.unfreeze_semua_baris) && parentContainer.hasClass('appinityTable-top-container'))
+                                        ($(this).text() == 'Freeze Baris' && parentContainer.hasClass('appinityTable-bottom-container')) || 
+                                        (($(this).text() == 'Unfreeze Baris' || $(this).text() == 'Unfreeze Semua Baris') && parentContainer.hasClass('appinityTable-top-container'))
                                     ) {
                                         $(this).removeClass('context-menu--disabled');
                                     }
@@ -1042,10 +1042,10 @@
                             var firstData   = parseInt(limitSection.val()) * indexPage + 1;
                             var lastData    = firstData + parseInt(r.num_rows) - 1;
                             var showData    = firstData == lastData ? firstData : firstData + ' - ' + lastData;
-                            infoSection.html(lang.data_ke + ' ' + showData + ' '+lang.dari+' ' + totalRecord + ' ' + lang.data);
+                            infoSection.html('Data ke ' + showData + ' dari ' + totalRecord + ' data');
                         }
                         if(typeof r.total_filter != 'undefined' && r.total_filter != null) {
-                            infoSection.append('<span class="ms-1 fst-italic fw-bold">('+lang.tersaring_dari+' ' + r.total_data + ' '+lang.data+')</span>');
+                            infoSection.append('<span class="ms-1 fst-italic fw-bold">(Tersaring dari ' + r.total_data + ' Data)</span>');
                         }
                     }
 
@@ -1488,17 +1488,18 @@
 															buttonContent   += '</ul></div>';
 														}
 													}
+                                                    
 													if(r.edit) {
-														buttonContent   += '<button class="btn btn-warning btn-input" data-key="'+r.primary_field+'"  data-val="'+v[r.primary_field]+'" app-link="'+app_link+'" data-action="'+actionTarget+'" data-appinity-tooltip="top" data-context-key="edit" aria-label="'+lang.edit+'"><i class="appinityTable-action-icon fa-edit"></i></button>';
+														buttonContent   += '<button class="btn btn-warning btn-input" data-key="'+r.primary_field+'"  data-val="'+v[r.primary_field]+'" app-link="'+app_link+'" data-action="'+actionTarget+'" data-appinity-tooltip="top" data-context-key="edit" aria-label="Edit"><i class="appinityTable-action-icon fa-edit"></i></button>';
 														contextItems['edit']    = {
-															name : lang.edit,
+															name : 'Edit',
 															icon : 'fa-edit'
 														}
 													}
 													if(r.delete) {
-														buttonContent   += '<button class="btn btn-danger btn-delete" data-key="'+r.primary_field+'"  data-val="'+v[r.primary_field]+'" app-link="'+app_link+'" data-action="'+actionTarget+'" data-appinity-tooltip="top" data-context-key="delete" aria-label="'+lang.hapus+'"><i class="appinityTable-action-icon fa-trash-alt"></i></button>';
+														buttonContent   += '<button class="btn btn-danger btn-delete" data-key="'+r.primary_field+'"  data-val="'+v[r.primary_field]+'" app-link="'+app_link+'" data-action="'+actionTarget+'" data-appinity-tooltip="top" data-context-key="delete" aria-label="Hapus"><i class="appinityTable-action-icon fa-trash-alt"></i></button>';
 														contextItems['delete']  = {
-															name : lang.hapus,
+															name : 'Hapus',
 															icon : 'fa-trash-alt'
 														}
 													}
@@ -1558,7 +1559,7 @@
                         if(infoSection.length > 0) {
                             infoSection.html('<span class="text-danger">Terjadi Kesalahan</span>');
                         } else {
-                            cAlert.open(lang.terjadi_kesalahan, 'error');
+                            cAlert.open('Terjadi Kesalahan', 'error');
                         }
                         reFixCell(_this);
                     }
@@ -1937,19 +1938,19 @@
             if(control) {
                 $t.closest('.appinityTable').prepend('<div class="appinityTable-control"></div>');
                 var _control    = $t.closest('.appinityTable').children('.appinityTable-control');
-                _control.append('<div class="appinityTable-control-left"><span class="appinityTable-label">baris per halaman</span><select class="form-select" data-width="resolve" data-limit></select><div class="appinityTable-info-data">Tidak ada data</div></div>');
+                _control.append('<div class="appinityTable-control-left"><span class="appinityTable-label">Baris per Halaman</span><select class="form-select" data-width="resolve" data-limit></select><div class="appinityTable-info-data">Tidak ada data</div></div>');
                 $.each(settings.range,function(re,ve){
                     _control.find('[data-limit]').append('<option value="'+ve+'">'+ve+'</option>');
                 });
 
                 _control.append( 
                     '<div class="appinityTable-control-right">' +
-                        '<button class="btn" data-page-button="prev" data-appinity-tooltip="top" aria-label="halaman sebelumnya">&lsaquo;</button>' +
+                        '<button class="btn" data-page-button="prev" data-appinity-tooltip="top" aria-label="Halaman Sebelumnya">&lsaquo;</button>' +
                         '<div class="input-group appinityTable-page-input">' +
                             '<input type="number" class="form-control" data-page value="0" />' +
                             '<div class="input-group-text">/ <span data-page-total>0</span></div>' +
                         '</div>' +
-                        '<button class="btn" data-page-button="next" data-appinity-tooltip="top" aria-label="halaman selanjutnya">&rsaquo;</button>' +
+                        '<button class="btn" data-page-button="next" data-appinity-tooltip="top" aria-label="Halaman Selanjutnya">&rsaquo;</button>' +
                     '</div>'
                 );
 

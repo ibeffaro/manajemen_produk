@@ -9,7 +9,7 @@ var appTable    = {};
         n.define("select2/i18n/app", [], function () {
             return {
                 errorLoading: function () {
-                    return lang.select2_errorLoading;
+                    return 'Data tidak boleh diambil.';
                 },
                 inputTooLong: function (n) {
                     return lang.select2_inputTooLong.replace('{replace}',(n.input.length - n.maximum));
@@ -18,19 +18,20 @@ var appTable    = {};
                     return lang.select2_inputTooShort.replace('{replace}',(n.minimum - n.input.length));
                 },
                 loadingMore: function () {
-                    return lang.select2_loadingMore;
+                    return 'Mengambil data…';
                 },
                 maximumSelected: function (n) {
-                    return lang.select2_maximumSelected.replace('{replace}', n.maximum);
+                    return 'Anda hanya dapat memilih ' + n.maximum + ' pilihan';
+                    // return 'Anda hanya dapat memilih {replace} pilihan'.replace('{replace}', n.maximum);
                 },
                 noResults: function () {
-                    return lang.select2_noResults;
+                    return 'Tidak ada data yang sesuai';
                 },
                 searching: function () {
-                    return lang.select2_searching;
+                    return 'Mencari…';
                 },
                 removeAllItems: function () {
-                    return lang.select2_removeAllItems;
+                    return 'Hapus Semua Item';
                 },
             };
         }),
@@ -64,8 +65,8 @@ $.fn.extend({
 });
 $.ajaxSetup({
     beforeSend: function(xhr, settings) {
-        xhr.setRequestHeader("X-Client-Token", appinityToken.clientToken());
-        xhr.setRequestHeader("X-Request-Token", appinityToken.requestToken());
+        // xhr.setRequestHeader("X-Client-Token", appinityToken.clientToken());
+        // xhr.setRequestHeader("X-Request-Token", appinityToken.requestToken());
         if($('meta[name="string-uri"]').length > 0) {
             xhr.setRequestHeader("X-Data-Ref", $('meta[name="string-uri"]').attr('content'));
         }
@@ -120,7 +121,7 @@ $.ajaxSetup({
     },
     error: function(jqXHR, textStatus, errorThrown) {
         xhrSave = null;
-        var message     = lang.terjadi_kesalahan;
+        var message     = 'Terjadi Kesalahan';
         var status      = jqXHR.status;
         var typeInfo    = 'dialog';
         var form        = null;
@@ -171,20 +172,20 @@ var cAlert = cAlert || (function($) {
             if (typeof message === 'undefined') {
                 message = 'Halo Dunia';
             }
-            var title = lang.pemberitahuan;
+            var title = 'Pemberitahuan';
             var type = 'info';
             if (typeof status !== 'undefined') {
                 if (inArray(status,['error','danger'])) {
-                    title = lang.kesalahan;
+                    title = 'Kesalahan';
                     type = 'error';
                 } else if (status == 'failed') {
-                    title = lang.gagal;
+                    title = 'Gagal';
                     type = 'error';
                 } else if (status == 'success') {
-                    title = lang.berhasil;
+                    title = 'Berhasil';
                     type = 'success';
                 } else if (status == 'warning') {
-                    title = lang.peringatan;
+                    title = 'Peringatan';
                     type = 'warning';
                 }
             }
@@ -193,7 +194,7 @@ var cAlert = cAlert || (function($) {
                     title: title,
                     text: message,
                     icon: type,
-                    button: lang.ok,
+                    button: 'Ok',
                     closeOnClickOutside: false,
                     closeOnEsc: false,
                 }).then((value) => {
@@ -230,21 +231,21 @@ var cConfirm = cConfirm || (function($) {
     return {
         open: function(message, onConfirm, paramConfirm, tipe) {
             if (typeof message === 'undefined') {
-                message = lang.apakah_anda_yakin + '?';
+                message = 'Apakah anda yakin?';
             }
-            var title = lang.konfirmasi;
+            var title = 'Kofirmasi';
             var type = 'question';
             if (typeof tipe !== 'undefined') type = tipe;
-            if (tipe == 'warning') title = lang.peringatan;
+            if (tipe == 'warning') title = 'Peringatan';
             if(typeof swal !== 'undefined') {
                 swal({
                     title: title,
                     text: message,
                     icon: type,
                     buttons: {
-                        cancel: lang.batalkan,
+                        cancel: 'Batalkan',
                         catch: {
-                            text: lang.lanjutkan,
+                            text: 'Lanjutkan',
                             value: "catch",
                             closeModal: false
                         }
@@ -698,8 +699,8 @@ function dateInit(parent) {
                 parentEl: parent,
                 locale: {
                     format: 'DD/MM/YYYY',
-                    cancelLabel: lang.batal,
-                    applyLabel: lang.ok,
+                    cancelLabel: 'Batal',
+                    applyLabel: 'Ok',
                     daysOfWeek: [lang.min, lang.sen, lang.sel, lang.rab, lang.kam, lang.jum, lang.sab],
                     monthNames: [lang.jan, lang.feb, lang.mar, lang.apr, lang.mei, lang.jun, lang.jul, lang.agu, lang.sep, lang.okt, lang.nov, lang.des]
                 },
@@ -782,8 +783,8 @@ function datetimeInit(parent) {
                 parentEl: parent,
                 locale: {
                     format: 'DD/MM/YYYY HH:mm',
-                    cancelLabel: lang.batal,
-                    applyLabel: lang.ok,
+                    cancelLabel: 'Batal',
+                    applyLabel: 'Ok',
                     daysOfWeek: [lang.min, lang.sen, lang.sel, lang.rab, lang.kam, lang.jum, lang.sab],
                     monthNames: [lang.jan, lang.feb, lang.mar, lang.apr, lang.mei, lang.jun, lang.jul, lang.agu, lang.sep, lang.okt, lang.nov, lang.des]
                 },
@@ -875,9 +876,9 @@ function daterangeInit(parent) {
                 parentEl: parent,
                 locale: {
                     format: 'DD/MM/YYYY - DD/MM/YYYY',
-                    cancelLabel: lang.batal,
+                    cancelLabel: 'Batal',
                     customRangeLabel: lang.kustom,
-                    applyLabel: lang.ok,
+                    applyLabel: 'Ok',
                     daysOfWeek: [lang.min, lang.sen, lang.sel, lang.rab, lang.kam, lang.jum, lang.sab],
                     monthNames: [lang.jan, lang.feb, lang.mar, lang.apr, lang.mei, lang.jun, lang.jul, lang.agu, lang.sep, lang.okt, lang.nov, lang.des]
                 },
@@ -1050,7 +1051,6 @@ $(document).ready(function(){
     currencyInit();
     select2Init();
 	colorInit();
-	badgeParent();
     if($('.input-icon').length > 0) {
         var invIcon = setInterval(function(){
             iconpickerInit();
@@ -1262,7 +1262,6 @@ $(document).ready(function(){
         currencyInit();
         select2Init();
         colorInit();
-        ckeditorInit();
     });
     if($().appinityTable) {
         var appTableIndex = 0;
@@ -1322,11 +1321,13 @@ $(document).on('click','.btn-input',function(e){
     var t       = $(this);
     var valID   = t.attr('data-val');
     var valKey  = t.attr('data-key');
+    
     if(typeof valID == 'undefined') valID = '';
     if(typeof valKey == 'undefined') valKey = 'id';
     var appLink = t.attr('app-link');
     if(typeof appLink == 'undefined') appLink = 'default';
     var actInput    = window[appLink + 'Input'];
+    
     if(typeof actInput == 'function') {
         actInput(valID, valKey);
     } else {
@@ -1344,6 +1345,7 @@ $(document).on('click','.btn-input',function(e){
         } else if($('form').length == 1) {
             form    = $('form').eq(0);
         }
+        
         if(form != null) {
             var ajaxURL = getAppLinkURL(appLink) + '/';
             if(typeof form.attr('action') == 'undefined' || form.attr('action') == '') {
@@ -1362,9 +1364,9 @@ $(document).on('click','.btn-input',function(e){
                     var modalSubtitle = form.closest('.modal').find('.modal-title').find('small');
                     if(modalSubtitle.hasClass('subtitle-info')) {
                         if(valID) {
-                            modalSubtitle.text(lang.edit_data);
+                            modalSubtitle.text('Edit Data');
                         } else {
-                            modalSubtitle.text(lang.tambah_data);
+                            modalSubtitle.text('Tambah Data');
                         }
                     }
                 }
@@ -1395,14 +1397,11 @@ $(document).on('click','.btn-input',function(e){
                     actionLoad      = beforeLoad(appLink, valID);
                     if(typeof actionLoad == 'boolean') processLoad = actionLoad;
                 }
-                if($('#' + modalID + ' .editor').length > 0 && typeof window.CKEDITOR != 'undefined') {
-                    $('#' + modalID + ' .editor').each(function(){
-                        CKEDITOR.instances[$(this).attr('id')].setData('');
-                    });
-                }
+                
                 if(processLoad) {
                     $('#' + modalID + ' .modal-footer-info').addClass('d-none');
                     $('#' + modalID + ' .modal-footer-info').children().attr('aria-label','');
+                
                     if(valID) {
                         var origin_class = t.find('i').attr('class');
                         t.find('i').attr('class','fa-spinner-third fa-spin d-inline-block');
@@ -1552,7 +1551,7 @@ $(document).on('click','.btn-delete',function(e){
         actDelete(valID, valKey);
     } else {
         var ajaxURL = getAppLinkURL(appLink) + '/delete' + getAppLinkURL(appLink,'param');
-        cConfirm.open(lang.apakah_anda_yakin_ingin_menghapus_data_ini+'?','__deleteData',{
+        cConfirm.open('Apakah anda yakin menghapus data ini?','__deleteData',{
             url : ajaxURL,
             valID : valID,
             valKey: valKey,
@@ -1565,7 +1564,7 @@ function deleteSelected(val, appLink) {
     
     if(typeof field == 'string' && field.trim() != '') {
         var ajaxURL = getAppLinkURL(appLink) + '/delete' + getAppLinkURL(appLink,'param');
-        cConfirm.open( val[field].length+' '+lang.data_terpilih+"\n\n" + lang.apakah_anda_yakin_ingin_menghapus_data_ini+'?','__deleteData',{
+        cConfirm.open( val[field].length+' Data terpilih'+"\n\n" + 'Apakah anda yakin menghapus data ini?','__deleteData',{
             url : ajaxURL,
             valID : val[field],
             valKey: field,
@@ -1586,7 +1585,7 @@ function getAppLinkURL(appLink,type) {
     } else if($('form').length == 1) {
         var form    = $('form').eq(0);
     }
-
+    
     var res = '';
     if(type == 'param') {
         if(form != null) {
@@ -1613,6 +1612,7 @@ function getAppLinkURL(appLink,type) {
             }
         }
     }
+
     return res;
 }
 function __deleteData(params) {
@@ -1631,71 +1631,6 @@ function __deleteData(params) {
         }
     })
 }
-$(document).on('click','.btn-import',function(){
-    var appLink = $(this).attr('app-link');
-    if(typeof appLink == 'undefined') appLink = 'default';
-    var actImport   = window[appLink + 'Import'];
-    if(typeof actImport == 'function') {
-        actImport();
-    } else {
-        var actParam    = '';
-        if($(this).attr('app-action-key') != 'undefined') {
-            actParam    = '/' + $(this).attr('app-action-key');
-        }
-        var ajaxURL = getAppLinkURL(appLink) + '/import' + getAppLinkURL(appLink,'param') + actParam;
-        var form    = $('.modal form[app-link="'+appLink+'"]').eq(0);
-        $('.modal form[app-link="'+appLink+'"]').each(function(){
-            var id = $(this).attr('id');
-            if(id.indexOf('import') != -1) {
-                form = $(this);
-            }
-        });
-        if(typeof form.attr('action') == 'undefined' || form.attr('action') == '') {
-            form.attr('action',ajaxURL);
-            form.attr('method','post');
-        }
-        if(typeof form.attr('data-callback') == 'undefined') {
-            form.attr('data-callback','refreshData:' + appLink);
-        }
-        var _modal   = form.closest('.modal');
-        if(typeof _modal.attr('id') == 'undefined' || _modal.attr('id') == '') {
-            _modal.attr('id','modal-' + rand() + rand());
-        }
-        var modalID = _modal.attr('id');
-        form[0].reset();
-        modal(modalID).show();
-    }
-});
-$(document).on('click','.btn-template-import',function(){
-    var appLink = $(this).attr('app-link');
-    if(typeof appLink == 'undefined') appLink = 'default';
-    var actImport   = window[appLink + 'TemplateImport'];
-    if(typeof actImport == 'function') {
-        actImport();
-    } else {
-        var actParam    = '';
-        if($(this).attr('app-action-key') != 'undefined') {
-            actParam    = '/' + $(this).attr('app-action-key');
-        }
-        var ajaxURL     = getAppLinkURL(appLink) + '/template-import'+ getAppLinkURL(appLink,'param') + actParam;
-        window.open(ajaxURL,'_blank');
-    }
-});
-$(document).on('click','.btn-export',function(){
-    var appLink = $(this).attr('app-link');
-    if(typeof appLink == 'undefined') appLink = 'default';
-    var actExport   = window[appLink + 'Export'];
-    if(typeof actExport == 'function') {
-        actExport();
-    } else {
-        var actParam    = '';
-        if($(this).attr('app-action-key') != 'undefined') {
-            actParam    = '/' + $(this).attr('app-action-key');
-        }
-        var ajaxURL = getAppLinkURL(appLink) + '/export' + getAppLinkURL(appLink,'param') + actParam;
-        window.open(ajaxURL,'_blank');
-    }
-});
 $(document).on('select2:open', function() {
     setTimeout(function(){
         if($('.select2-container--open').find('.select2-selection--single').length > 0 && !$('.select2-search__field').parent().hasClass('select2-search--hide')) {
@@ -1703,88 +1638,4 @@ $(document).on('select2:open', function() {
         }    
     },100);
 });
-$(document).on('click','[data-print]',function(e){
-    e.preventDefault();
-    var elem = $(this).attr('data-print');
-    if($(elem).length > 0) {
-        var printHeader     = null;
-        var pageTitle       = '';
-        var headerTemp      = '';
 
-        if($(this).attr('data-header') != "false" && $('#appinity-print-header').length == 1) {
-            // headerTemp     += $('#appinity-print-header').html();
-        }
-
-        if($(this).attr('data-title') != 'undefined') {
-            headerTemp     += '<div class="mt-2 fw-bold text-uppercase">' + $(this).attr('data-title') + '</div>';
-            pageTitle       = $(this).attr('data-title');
-        }
-
-        if(headerTemp) {
-            printHeader     = '<div class="mb-3">' + headerTemp + '</div>';
-        }
-
-        $(elem).printThis({
-            header: printHeader,
-            pageTitle: pageTitle
-        });
-    }
-});
-
-function printData(html,header) {
-    var printHeader = null;
-    if(html == undefined) html = '';
-    if(header == undefined) header = true;
-    if(header !== false && $('#appinity-print-header').length == 1) {
-        printHeader     = '<div class="mb-3">' + $('#appinity-print-header').html() + '</div>';
-    }
-    $('body').append('<div id="temp-print-data" style="z-index:-1;">'+html+'</div>');
-    $('#temp-print-data').printThis({
-        header: printHeader,
-        afterPrint: function() {
-            $('#temp-print-data').remove();
-        }
-    })
-}
-function ckeditorInit() {
-    if(typeof window.CKEDITOR !== 'undefined') {
-        $('textarea.editor').each(function(){
-            $(this).closest('.modal').attr('data-bs-focus',false);
-            CKEDITOR.replace( $(this).attr('id') ,{
-                toolbar : [
-                    { name: 'document', items: [ 'Source', '-', 'Save', 'NewPage', 'Preview', 'Print', '-', 'Templates' ] },
-                    { name: 'clipboard', items: [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo' ] },
-                    { name: 'editing', items: [ 'Find', 'Replace', '-', 'SelectAll' ] },
-                    '/',
-                    { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat' ] },
-                    { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl', 'Language' ] },
-                    { name: 'links', items: [ 'Link', 'Unlink', 'Anchor' ] },
-                    { name: 'insert', items: [ 'Image', 'Flash', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak', 'Iframe' ] },
-                    { name: 'styles', items: [ 'Styles', 'Format', 'Font', 'FontSize' ] },
-                    { name: 'colors', items: [ 'TextColor', 'BGColor' ] },
-                    { name: 'tools', items: [ 'Maximize', 'ShowBlocks' ] }
-                ],
-                filebrowserBrowseUrl : baseURL('filemanager/filemanager/dialog.php?type=2&editor=ckeditor&fldr='),
-                filebrowserUploadUrl : baseURL('filemanager/filemanager/dialog.php?type=2&editor=ckeditor&fldr='),
-                filebrowserImageBrowseUrl : baseURL('filemanager/filemanager/dialog.php?type=1&editor=ckeditor&fldr='),
-                width : 'auto',
-                height : 300
-            });
-        })
-    }
-}
-function badgeParent() {
-	$('.have-badge').removeClass('have-badge');
-	$('.list-menu .badge.badge-danger').each(function(){
-		var p1 = $(this).closest('ul');
-		var p2 = p1.parent().closest('ul');
-		var jml1 = 0;
-		p1.find('.badge.badge-danger').each(function(){
-			jml1 += parseInt($(this).text());
-		});
-		if(jml1 > 0) {
-			p1.siblings('a').addClass('have-badge');
-			p2.siblings('a').addClass('have-badge');
-		}
-	});
-}
