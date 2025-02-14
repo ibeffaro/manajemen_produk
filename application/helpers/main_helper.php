@@ -50,7 +50,6 @@ function render($data = [], $output = '', $forceAccess = false)
                 }
                 if ($init_page) {
                     $error_code = in_array($init_page, [404, 403]) ? $init_page : 400;
-                    if ($init_page == 'maintenance_mode') $error_code = 200;
                     $CI->output->set_status_header($error_code);
                     $layout             = false;
                     $view               = 'errors/error_all';
@@ -60,19 +59,18 @@ function render($data = [], $output = '', $forceAccess = false)
                     $data['message']    = !isset($data['message']) ? lang($init_page . '_desc') : $data['message'];
                     switch ($init_page) {
                         case "403":
-                            $data['title']      = lang('dilarang');
+                            $data['title']      = 'Dilarang';
                             $data['image']      = '403';
                             break;
                         case "404":
-                            $data['title']      = lang('halaman_tidak_ditemukan');
+                            $data['title']      = 'Halaman tidak ditemukan';
                             $data['image']      = '404';
                             break;
                         default:
                             $data['error_code'] = "Err";
                             $data['image']      = 'error';
-                            $data['title']      = lang('kesalahan');
+                            $data['title']      = 'kesalahan';
                     }
-                    update_data('user_log', ['respon' => $data['error_code']], 'id', setting('last_id_log'));
                 }
                 $data['__js']           = '';
                 $data['__css']          = '';

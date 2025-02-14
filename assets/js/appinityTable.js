@@ -1005,6 +1005,7 @@
             }
 
             ajaxUrl = appTable.find('table[data-source]').attr('data-source');
+            
 
             var ajaxConfig  = {
                 url     : ajaxUrl,

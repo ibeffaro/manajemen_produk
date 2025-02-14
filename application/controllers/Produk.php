@@ -27,7 +27,6 @@ class Produk extends MY_Controller
 
 	public function get_data()
 	{
-		debug(get()); die;
 		$data = get_data('products', get())->row();
 		render($data, 'json');
 	}
@@ -35,7 +34,6 @@ class Produk extends MY_Controller
 	public function save()
 	{
 		$data 		= post();
-		debug($data); die;
 		$response   = save_data('products', $data);
 		render($response, 'json');
 	}
@@ -45,4 +43,5 @@ class Produk extends MY_Controller
 		$response   = destroy_data('products', get());
 		render($response, 'json');
 	}
+
 }

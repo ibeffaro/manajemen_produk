@@ -649,9 +649,9 @@ function destroy_data($tabel = '', $field = '', $id = '', $child = [], $force = 
                     if ($del) $jml_del++;
                 }
             }
-            if ($jml_del == 0) $message = lang('tidak_ada_data_yang_dihapus');
+            if ($jml_del == 0) $message = 'Tidak ada Data yang dihapus';
             else {
-                $message    = $jml_del . ' ' . lang('data_berhasil_dihapus');
+                $message    = $jml_del . ' Data Berhasil Dihapus';
                 $status     = 'success';
             }
         } else {
