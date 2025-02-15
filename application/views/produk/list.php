@@ -3,7 +3,7 @@
 		<h3 class="fw-bold"><?= $title; ?></h3>
 		<div id="data-control" class="d-flex mb-2">
 			<div class="ms-auto">
-				<a href="<?= base_url(); ?>" class="btn btn-info"><i class="fa-list me-2"></i>CRUD Versi Redirect</a>
+				<a href="base_url{}" class="btn btn-info"><i class="fa-list me-2"></i>CRUD Versi Redirect</a>
 				<button class="btn btn-success btn-input" type="button" app-link="default" data-key="id"><i class="fa-plus me-2"></i>Tambah Data</button>
 			</div>
 		</div>

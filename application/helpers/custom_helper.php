@@ -524,7 +524,6 @@ function save_data($table = '', $data = '', $force = false, $config = [])
             $editable   = true;
             if (isset($last_data['not_editable']) && $last_data['not_editable']) $editable = false;
             // if (($access['edit'] || $force) && $editable) {
-            if ($force && $editable) {
                 if (isset($listFields['updated_at'])) $dataMatch['updated_at']   = date_now();
                 if (isset($listFields['updated_by'])) $dataMatch['updated_by']   = user('nama');
                 if (isset($last_data) && is_array($last_data) && count($last_data) > 0) {
@@ -545,15 +544,15 @@ function save_data($table = '', $data = '', $force = false, $config = [])
                         }
                     }
                     $status         = 'success';
-                    $message        = lang('data_berhasil_diperbarui');
+                    $message        = 'Data Berhasil Diperbaharui';
                     $response_data  = get_data($table, $field_ref, $dataMatch[$field_ref])->row_array();
                     if (!isset($response_data[$field_ref])) {
                         $response_data  = $dataMatch;
                     }
                 }
-            } else {
-                $message    = lang('izin_ditolak');
-            }
+            // } else {
+            //     $message    = lang('izin_ditolak');
+            // }
         } else {
             $_act   = 'input';
             // if ($access['input'] || $force) {
@@ -704,6 +703,23 @@ function destroy_data($tabel = '', $field = '', $id = '', $child = [], $force = 
         'action'    => 'delete'
     );
     return $response;
+}
+
+function return_currency($number = '', $decimal = 0)
+{
+    if (is_numeric($number)) {
+        if ($decimal == 'auto') {
+            $dec    = 0;
+            $number += 0;
+            $ex     = explode('.', $number);
+            if (isset($ex[1])) {
+                $dec    = strlen($ex[1]);
+                if ($dec == 1 && $ex[1] == 0) $dec = 0;
+            }
+            $decimal    = $dec;
+        }
+        return number_format($number, $decimal, ',', '.');
+    } else return $number;
 }
 
 function generate_data($config = [])

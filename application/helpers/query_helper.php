@@ -21,6 +21,13 @@ function table_exists($table = "")
     }
 }
 
+function last_query($group=''){
+    $CI         = get_instance();
+    $db_active  = $group ?: 'default';
+    $db_group   = $db_active != 'default' ? $CI->load->database($db_active,TRUE) : $CI->db;
+    return $db_group->last_query();
+}
+
 function table_prefix($table = '')
 {
     $CI         = get_instance();
